@@ -1,0 +1,319 @@
+{
+  "categories": [
+    {
+      "id": "food",
+      "name": {
+        "en": "Food",
+        "es": "Comida"
+      },
+      "subcategories": [
+        {
+          "id": "starters",
+          "name": {
+            "en": "Starters",
+            "es": "Entradas"
+          },
+          "items": [
+            {
+              "id": "garden-salad",
+              "name": {
+                "en": "Garden Salad",
+                "es": "Ensalada de la Casa"
+              },
+              "description": {
+                "en": "Fresh mixed greens with cherry tomatoes, cucumbers, and house dressing",
+                "es": "Mix de hojas verdes frescas con tomates cherry, pepino y aderezo de la casa"
+              },
+              "price": 8.00
+            },
+            {
+              "id": "caesar-salad",
+              "name": {
+                "en": "Caesar Salad",
+                "es": "Ensalada César"
+              },
+              "description": {
+                "en": "Crisp romaine lettuce with parmesan, croutons, and Caesar dressing",
+                "es": "Lechuga romana crujiente con parmesano, crutones y aderezo César"
+              },
+              "price": 10.00
+            },
+            {
+              "id": "french-onion-soup",
+              "name": {
+                "en": "French Onion Soup",
+                "es": "Sopa de Cebolla"
+              },
+              "description": {
+                "en": "Rich beef broth with caramelized onions and melted gruyère cheese",
+                "es": "Caldo de res con cebolla caramelizada y queso gruyère derretido"
+              },
+              "price": 9.00
+            },
+            {
+              "id": "chicken-wings",
+              "name": {
+                "en": "Chicken Wings (6 pcs)",
+                "es": "Alitas de Pollo (6 pzas)"
+              },
+              "description": {
+                "en": "Crispy wings with your choice of buffalo, BBQ, or honey garlic sauce",
+                "es": "Alitas crujientes con salsa buffalo, BBQ o miel con ajo"
+              },
+              "price": 13.00
+            }
+          ]
+        },
+        {
+          "id": "main-course",
+          "name": {
+            "en": "Main Course",
+            "es": "Plato Principal"
+          },
+          "items": [
+            {
+              "id": "grilled-chicken",
+              "name": {
+                "en": "Grilled Chicken Breast",
+                "es": "Pechuga de Pollo a la Parrilla"
+              },
+              "description": {
+                "en": "Juicy chicken breast with steamed vegetables and mashed potatoes",
+                "es": "Jugosa pechuga de pollo con vegetales al vapor y puré de papa"
+              },
+              "price": 18.00
+            },
+            {
+              "id": "club-sandwich",
+              "name": {
+                "en": "Club Sandwich",
+                "es": "Sándwich Club"
+              },
+              "description": {
+                "en": "Triple-decker with turkey, bacon, lettuce, tomato, and mayo",
+                "es": "Triple nivel con pavo, tocino, lechuga, tomate y mayonesa"
+              },
+              "price": 14.00
+            },
+            {
+              "id": "beef-burger",
+              "name": {
+                "en": "Beef Burger",
+                "es": "Hamburguesa de Res"
+              },
+              "description": {
+                "en": "Angus beef patty with cheddar, lettuce, tomato, and pickles",
+                "es": "Carne Angus con cheddar, lechuga, tomate y pepinillos"
+              },
+              "price": 16.00
+            },
+            {
+              "id": "margherita-pizza",
+              "name": {
+                "en": "Margherita Pizza",
+                "es": "Pizza Margarita"
+              },
+              "description": {
+                "en": "Classic pizza with tomato sauce, mozzarella, and fresh basil",
+                "es": "Pizza clásica con salsa de tomate, mozzarella y albahaca fresca"
+              },
+              "price": 15.00
+            },
+            {
+              "id": "ribeye-steak",
+              "name": {
+                "en": "Ribeye Steak",
+                "es": "Corte Ribeye"
+              },
+              "description": {
+                "en": "10oz ribeye with herb butter, roasted potatoes, and asparagus",
+                "es": "Ribeye de 10oz con mantequilla de hierbas, papas asadas y espárragos"
+              },
+              "price": 32.00
+            }
+          ]
+        },
+        {
+          "id": "desserts",
+          "name": {
+            "en": "Desserts",
+            "es": "Postres"
+          },
+          "items": [
+            {
+              "id": "lava-cake",
+              "name": {
+                "en": "Chocolate Lava Cake",
+                "es": "Pastel de Chocolate Volcán"
+              },
+              "description": {
+                "en": "Warm chocolate cake with a molten center, served with vanilla ice cream",
+                "es": "Pastel de chocolate tibio con centro derretido, acompañado de helado de vainilla"
+              },
+              "price": 8.00
+            },
+            {
+              "id": "cheesecake",
+              "name": {
+                "en": "New York Cheesecake",
+                "es": "Pay de Queso Estilo Nueva York"
+              },
+              "description": {
+                "en": "Creamy cheesecake with strawberry compote",
+                "es": "Pay de queso cremoso con compota de fresa"
+              },
+              "price": 7.00
+            },
+            {
+              "id": "ice-cream",
+              "name": {
+                "en": "Ice Cream (3 scoops)",
+                "es": "Helado (3 bolas)"
+              },
+              "description": {
+                "en": "Choice of vanilla, chocolate, or strawberry",
+                "es": "Elige vainilla, chocolate o fresa"
+              },
+              "price": 6.00
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drinks",
+      "name": {
+        "en": "Drinks",
+        "es": "Bebidas"
+      },
+      "subcategories": [
+        {
+          "id": "non-alcoholic",
+          "name": {
+            "en": "Non-Alcoholic",
+            "es": "Sin Alcohol"
+          },
+          "items": [
+            {
+              "id": "orange-juice",
+              "name": {
+                "en": "Fresh Orange Juice",
+                "es": "Jugo de Naranja Natural"
+              },
+              "description": {
+                "en": "Freshly squeezed oranges",
+                "es": "Naranjas recién exprimidas"
+              },
+              "price": 5.00
+            },
+            {
+              "id": "sparkling-water",
+              "name": {
+                "en": "Sparkling Water",
+                "es": "Agua Mineral"
+              },
+              "description": {
+                "en": "500ml bottle",
+                "es": "Botella de 500ml"
+              },
+              "price": 3.00
+            },
+            {
+              "id": "soft-drink",
+              "name": {
+                "en": "Soft Drink",
+                "es": "Refresco"
+              },
+              "description": {
+                "en": "Cola, Diet, or Sprite (355ml can)",
+                "es": "Cola, Diet o Sprite (lata 355ml)"
+              },
+              "price": 3.00
+            },
+            {
+              "id": "coffee-tea",
+              "name": {
+                "en": "Coffee / Tea",
+                "es": "Café / Té"
+              },
+              "description": {
+                "en": "Fresh brewed coffee or selection of teas",
+                "es": "Café recién preparado o selección de tés"
+              },
+              "price": 4.00
+            }
+          ]
+        },
+        {
+          "id": "alcoholic",
+          "name": {
+            "en": "Alcoholic",
+            "es": "Alcohólicas"
+          },
+          "items": [
+            {
+              "id": "domestic-beer",
+              "name": {
+                "en": "Domestic Beer",
+                "es": "Cerveza Nacional"
+              },
+              "description": {
+                "en": "355ml bottle",
+                "es": "Botella 355ml"
+              },
+              "price": 6.00
+            },
+            {
+              "id": "imported-beer",
+              "name": {
+                "en": "Imported Beer",
+                "es": "Cerveza Importada"
+              },
+              "description": {
+                "en": "355ml bottle (Heineken, Corona, Stella)",
+                "es": "Botella 355ml (Heineken, Corona, Stella)"
+              },
+              "price": 8.00
+            },
+            {
+              "id": "house-wine",
+              "name": {
+                "en": "House Wine (Glass)",
+                "es": "Vino de la Casa (Copa)"
+              },
+              "description": {
+                "en": "Red or white, 5oz pour",
+                "es": "Tinto o blanco, 5oz"
+              },
+              "price": 10.00
+            },
+            {
+              "id": "margarita",
+              "name": {
+                "en": "Margarita",
+                "es": "Margarita"
+              },
+              "description": {
+                "en": "Classic lime margarita on the rocks",
+                "es": "Margarita clásica de limón con hielo"
+              },
+              "price": 12.00
+            },
+            {
+              "id": "whiskey",
+              "name": {
+                "en": "Whiskey on the Rocks",
+                "es": "Whiskey con Hielo"
+              },
+              "description": {
+                "en": "Premium blend, 1.5oz",
+                "es": "Mezcla premium, 1.5oz"
+              },
+              "price": 14.00
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

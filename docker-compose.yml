@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: room-service-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-roomservice}
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-roomservice}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: room-service-api
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-roomservice}
+      - DB_USER=${DB_USER:-admin}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
+      - PRINTER_HOST=${PRINTER_HOST}
+      - PRINTER_PORT=${PRINTER_PORT:-9100}
+      - DEFAULT_CURRENCY=${DEFAULT_CURRENCY:-USD}
+      - USD_TO_MXN_RATE=${USD_TO_MXN_RATE:-17.50}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: room-service-client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

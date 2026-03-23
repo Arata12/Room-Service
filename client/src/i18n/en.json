@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "menu": "Menu",
+    "cart": "Cart",
+    "orders": "Orders"
+  },
+  "language": "Language",
+  "currency": "Currency",
+  "menu": {
+    "title": "Esmeralda Beach Resort Menu",
+    "food": "Food",
+    "drinks": "Drinks",
+    "starters": "Starters",
+    "mainCourse": "Main Course",
+    "desserts": "Desserts",
+    "nonAlcoholic": "Non-Alcoholic",
+    "alcoholic": "Alcoholic",
+    "addToCart": "Add to Cart",
+    "added": "Added!"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "checkout": "Proceed to Checkout",
+    "item": "Item",
+    "quantity": "Qty",
+    "price": "Price",
+    "total": "Total",
+    "remove": "Remove",
+    "clearCart": "Clear Cart"
+  },
+  "checkout": {
+    "title": "Complete Your Order",
+    "roomNumber": "Room Number",
+    "roomNumberPlaceholder": "e.g. 204",
+    "guestName": "Guest Name",
+    "guestNamePlaceholder": "Your name",
+    "notes": "Special Instructions (optional)",
+    "notesPlaceholder": "Any allergies or special requests...",
+    "payNow": "Pay Now",
+    "processing": "Processing...",
+    "errors": {
+      "roomRequired": "Please enter your room number",
+      "nameRequired": "Please enter your name"
+    }
+  },
+  "success": {
+    "title": "Order Confirmed!",
+    "message": "Your order has been received and is being prepared.",
+    "orderNumber": "Order Number",
+    "room": "Room",
+    "total": "Total",
+    "backToMenu": "Back to Menu",
+    "newOrder": "Place Another Order"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "paymentFailed": "Payment could not be processed. Please try again."
+  }
+}

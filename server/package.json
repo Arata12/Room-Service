@@ -1,0 +1,22 @@
+{
+  "name": "room-service-server",
+  "version": "1.0.0",
+  "description": "Room Service API — Express + PostgreSQL + Stripe + ESC/POS",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "escpos": "^3.0.0-alpha",
+    "escpos-network": "^3.0.0-alpha",
+    "express": "^4.19.2",
+    "pg": "^8.11.5",
+    "stripe": "^15.9.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
