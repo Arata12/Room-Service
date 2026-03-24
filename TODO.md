@@ -59,6 +59,16 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
   - Impacto: Levanta cliente + servidor sin Docker para desarrollo local
   - Notas: Instala deps automáticamente, crea data dir para SQLite, abre navegador
 
+- [completada] **Editor visual del menú desde admin**
+  - Archivos: `server/routes/menu.js`, `client/src/pages/MenuEditorPage.jsx`, `client/src/App.jsx`
+  - Impacto: Permite editar categorías, subcategorías y artículos sin tocar el JSON a mano
+  - Notas: |
+      - GET/PUT en `/api/menu` para leer/escribir `server/data/menu.json`
+      - UI jerárquica: árbol izquierdo → click para seleccionar; formulario derecho para editar
+      - Validación estructural en PUT (rechaza menú malformado)
+      - CRUD en todos los niveles: add/delete/edit categorías, subcategorías, items
+      - Accessible via botón "Edit Menu" en AdminPage → `/admin/menu`
+
 ---
 
 ## Funcionalidad — CRITICA (rompen el flujo)
@@ -177,6 +187,7 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 - 2026-03-24 — printer: selección bilingüe item_name_en/es según currency
 - 2026-03-24 — DB abstraction layer: SQLite (dev) + PostgreSQL (prod) con `better-sqlite3`
 - 2026-03-24 — Scripts run-dev.bat (Windows) y run-dev.sh (Mac/Linux) para desarrollo sin Docker
+- 2026-03-24 — Editor visual del menú: `/admin/menu`, tree navigator + form, CRUD completo
 
 ---
 
