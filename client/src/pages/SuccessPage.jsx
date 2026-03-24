@@ -21,14 +21,40 @@ export default function SuccessPage() {
   }, [clearCart]);
 
   useEffect(() => {
+    // 1. Si ya tenemos la orden en navigation state (caso normal tras checkout demo),
+    // la usamos directamente sin hacer fetch.
+    if (location.state?.order) {
+      setOrder(location.state.order);
+      setLoading(false);
+      return;
+    }
+
+    // 2. fallback: buscar por order_id (URL directa tras recarga en modo demo)
+    const orderIdParam = searchParams.get('order_id');
+    if (demoMode && orderIdParam) {
+      const loadOrder = async () => {
+        try {
+          const response = await fetch(`/api/orders/${encodeURIComponent(orderIdParam)}`);
+          if (!response.ok) throw new Error('Failed to load order');
+          const data = await response.json();
+          setOrder(data);
+        } catch (error) {
+          setOrder(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadOrder();
+      return;
+    }
+
+    // 3. Modo Stripe real: buscar por session_id
     const sessionId = searchParams.get('session_id');
     const loadOrder = async () => {
       try {
-        if (sessionId && !demoMode) {
+        if (sessionId) {
           const response = await fetch(`/api/orders?session_id=${encodeURIComponent(sessionId)}`);
-          if (!response.ok) {
-            throw new Error('Failed to load order');
-          }
+          if (!response.ok) throw new Error('Failed to load order');
           const data = await response.json();
           setOrder(data.order || data);
         }
@@ -39,13 +65,12 @@ export default function SuccessPage() {
       }
     };
 
-    if (demoMode) {
+    if (sessionId) {
+      loadOrder();
+    } else {
       setLoading(false);
-      return;
     }
-
-    loadOrder();
-  }, [searchParams, demoMode]);
+  }, [searchParams, demoMode, location.state]);
 
   if (loading) {
     return (
@@ -79,7 +104,7 @@ export default function SuccessPage() {
               <div>{t('success.room')}: {order.room_number || '—'}</div>
               <div>{t('success.guest')}: {order.guest_name || '—'}</div>
               <div>{t('success.items')}: {Array.isArray(order.items) ? order.items.map((item) => `${getItemName(item)} x${item.quantity}`).join(', ') : '—'}</div>
-              <div>{t('success.total')}: {order.total || '—'} {order.currency || currency}</div>
+              <div>{t('success.total')}: {order.total_usd || '—'} {order.currency || currency}</div>
             </div>
           )}
 
