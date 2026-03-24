@@ -46,15 +46,15 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 
 ## Funcionalidad — CRITICA (rompen el flujo)
 
-- [pendiente] **Flujo checkout -> success desalineado en modo demo**
-  - Archivos: `server/routes/checkout.js:112`, `client/src/pages/SuccessPage.jsx:24`, `client/src/components/GuestForm.jsx:63`
+- [completada] **Flujo checkout -> success desalineado en modo demo**
+  - Archivos: `server/routes/checkout.js:112`, `client/src/pages/SuccessPage.jsx`, `client/src/components/GuestForm.jsx:63`
   - Impacto: El backend devuelve `order_id` en la URL, pero SuccessPage busca `session_id`. En modo demo, la navegación funciona por state pero si el usuario recarga la página, no recupera la orden.
-  - Notas: Necesita unify endpoint — o que successPage acepte `order_id` como fallback o que el backend devuelva consistentemente
+  - Notas: "Necesita unify endpoint" — resuelto con nueva lógica de 3 capas: state → order_id → session_id
 
-- [pendiente] **SuccessPage no recupera orden al recargar (modo demo)**
+- [completada] **SuccessPage no recupera orden al recargar (modo demo)**
   - Archivos: `client/src/pages/SuccessPage.jsx`
   - Impacto: Si el usuario recarga `/success?demo=1&order_id=X`, ve pantalla de éxito sin datos de la orden
-  - Notas: El `location.state` se pierde en recarga. Hay que consultar `/api/orders/:id` o pasar el `order` en la URL query params
+  - Notas: `location.state` se perdía en recarga — ahora hay fallback a `/api/orders/:id`
 
 - [pendiente] **Admin: cliente no envía token JWT pero middleware exige auth**
   - Archivos: `client/src/App.jsx:17`, `client/src/pages/AdminPage.jsx:37`, `server/middleware/auth.js:8`
@@ -65,20 +65,20 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 
 ## Funcionalidad — ALTA (causan errores o experiencia degradada)
 
-- [pendiente] **webhook.js: json_agg sin FILTER puede devolver items nulos**
+- [completada] **webhook.js: json_agg sin FILTER puede devolver items nulos**
   - Archivos: `server/routes/webhook.js:37`
   - Impacto: Si una orden no tiene items, `json_agg` sin `FILTER (WHERE oi.id IS NOT NULL)` puede devolver arrays con objetos nulos en lugar de `[]`
-  - Notas: Otros endpoints usan `COALESCE(..., '[]'::json) FILTER (WHERE oi.id IS NOT NULL)`. Este endpoint no lo tiene
+  - Notas: Añadido `COALESCE(..., '[]'::json) FILTER (WHERE oi.id IS NOT NULL)` — mismo patrón que otros endpoints
 
-- [pendiente] **DB: sin validación de variables de entorno**
+- [completada] **DB: sin validación de variables de entorno**
   - Archivos: `server/db/index.js`
   - Impacto: Si `DB_HOST`, `DB_NAME`, etc. son `undefined`, pg intenta conectar con valores vacíos y falla con error críptico
-  - Notas: Añadir validación o defaults sensatos antes de crear el Pool
+  - Notas: Añadida validación de las 5 vars requeridas con `process.exit(1)` si faltan
 
-- [pendiente] **Printer: siempre usa nombre en inglés**
+- [completada] **Printer: siempre usa nombre en inglés**
   - Archivos: `server/printer/print.js:65`
   - Impacto: Los tickets impresos siempre muestran `item_name_en`, sin considerar el idioma del pedido
-  - Notas: Necesita lógica para elegir `item_name_en` o `item_name_es` según `order.currency` o parámetro
+  - Notas: Añadida selección `item_name_es` para MXN, `item_name_en` para USD
 
 ---
 
@@ -127,7 +127,7 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
   - Impacto: Guardar timestamp y usuario que hizo cada cambio de estado
   - Notas: Crear tabla, trigger o log en app, y mostrarla en modal de AdminPage
 
-- [pendiente] **Impresora bilingüe**
+- [completada] **Impresora bilingüe**
   - Archivos: `server/printer/print.js`
   - Impacto: Tickets en español para huéspedes que no leen inglés
   - Notas: Usar `item_name_es` cuando `order.currency` indique contexto MX
@@ -153,6 +153,11 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 
 - 2026-03-24 — Creado TODO.md inicial y .gitignore
 - 2026-03-24 — Sacado node_modules del tracking de git (5355 archivos eliminados del repo, ~996K líneas)
+- 2026-03-24 — SuccessPage: order recovery en demo mode (state + order_id fallback + session_id)
+- 2026-03-24 — SuccessPage: `order.total` → `order.total_usd` (bug encontrado durante fix)
+- 2026-03-24 — webhook.js: json_agg con COALESCE + FILTER
+- 2026-03-24 — db/index.js: validación de env vars con exit claro
+- 2026-03-24 — printer: selección bilingüe item_name_en/es según currency
 
 ---
 
