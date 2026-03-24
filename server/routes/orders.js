@@ -1,47 +1,52 @@
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../db');
+const db = require('../db');
+
+/**
+ * Helper: fetch items for a given order_id from order_items table.
+ * Works identically for both SQLite and PostgreSQL.
+ */
+async function getOrderItems(orderId) {
+  const rows = await db.all(
+    `SELECT item_id, item_name_en, item_name_es, quantity, unit_price_usd
+     FROM order_items
+     WHERE order_id = ?`,
+    [orderId]
+  );
+  return rows;
+}
+
+/**
+ * Helper: attach items array to each order row.
+ * For PostgreSQL the items come from the JOIN; for SQLite we fetch them separately.
+ */
+async function attachItems(orders) {
+  if (!Array.isArray(orders)) orders = [orders];
+  const result = [];
+  for (const order of orders) {
+    const items = await getOrderItems(order.id);
+    result.push({ ...order, items });
+  }
+  return orders.length === 1 ? result[0] : result;
+}
 
 router.get('/', async (req, res) => {
   try {
     if (req.query.session_id) {
-      const result = await pool.query(
-        `SELECT o.*, COALESCE(json_agg(json_build_object(
-          'item_id', oi.item_id,
-          'item_name_en', oi.item_name_en,
-          'item_name_es', oi.item_name_es,
-          'quantity', oi.quantity,
-          'unit_price_usd', oi.unit_price_usd
-        )) FILTER (WHERE oi.id IS NOT NULL), '[]'::json) as items
-         FROM orders o
-         LEFT JOIN order_items oi ON o.id = oi.order_id
-         WHERE o.stripe_session_id = $1
-         GROUP BY o.id`,
+      const order = await db.get(
+        `SELECT * FROM orders WHERE stripe_session_id = ?`,
         [req.query.session_id]
       );
-
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Order not found' });
-      }
-
-      return res.json({ order: result.rows[0] });
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+      const withItems = await attachItems(order);
+      return res.json({ order: withItems });
     }
 
-    const result = await pool.query(
-      `SELECT o.*, COALESCE(json_agg(json_build_object(
-        'item_id', oi.item_id,
-        'item_name_en', oi.item_name_en,
-        'item_name_es', oi.item_name_es,
-        'quantity', oi.quantity,
-        'unit_price_usd', oi.unit_price_usd
-      )) FILTER (WHERE oi.id IS NOT NULL), '[]'::json) as items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi.order_id
-        GROUP BY o.id
-        ORDER BY o.created_at DESC
-        LIMIT 50`
+    const orders = await db.all(
+      `SELECT * FROM orders ORDER BY created_at DESC LIMIT 50`
     );
-    res.json(result.rows);
+    const withItems = await attachItems(orders);
+    res.json(withItems);
   } catch (err) {
     console.error('Error fetching orders:', err);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -50,26 +55,10 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT o.*, COALESCE(json_agg(json_build_object(
-        'item_id', oi.item_id,
-        'item_name_en', oi.item_name_en,
-        'item_name_es', oi.item_name_es,
-        'quantity', oi.quantity,
-        'unit_price_usd', oi.unit_price_usd
-      )) FILTER (WHERE oi.id IS NOT NULL), '[]'::json) as items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi.order_id
-        WHERE o.id = $1
-        GROUP BY o.id`,
-      [req.params.id]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Order not found' });
-    }
-    
-    res.json(result.rows[0]);
+    const order = await db.get(`SELECT * FROM orders WHERE id = ?`, [req.params.id]);
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    const withItems = await attachItems(order);
+    res.json(withItems);
   } catch (err) {
     console.error('Error fetching order:', err);
     res.status(500).json({ error: 'Failed to fetch order' });

@@ -42,6 +42,23 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
   - Impacto: Reducir tamaño del repo, impedir sube archivos de módulos a GitHub
   - Notas: `git rm --cached -r client/node_modules server/node_modules` (no borrar archivos locales)
 
+- [completada] **DB abstraction layer: SQLite (dev) + PostgreSQL (production)**
+  - Archivos: `server/db/index.js`, `server/routes/{orders,admin,checkout,webhook}.js`, `server/package.json`
+  - Impacto: Permite desarrollo sin Docker; producción usa Postgres via docker-compose
+  - Notas: |
+      - Nueva capa `db` con `db.all()`, `db.get()`, `db.run()`, `db.tx()` — API uniforme para ambos drivers
+      - SQLite: better-sqlite3, archivo en `server/data/dev.db`, auto-crea tablas al iniciar
+      - PostgreSQL: pool pg existente, sin cambios en lógica de negocio
+      - `ILIKE`, `RETURNING`, `json_agg` normalizados en la abstracción
+      - items se assemblan en JS (no `json_agg`) para compatibilidad SQLite
+      - Transacciones via `db.tx()` — compatible con ambos drivers
+      - Vars: `DB_DRIVER=sqlite|postgres`, `DB_PATH` para SQLite
+
+- [completada] **Scripts de desarrollo (run-dev.bat / run-dev.sh)**
+  - Archivos: `run-dev.bat`, `run-dev.sh`
+  - Impacto: Levanta cliente + servidor sin Docker para desarrollo local
+  - Notas: Instala deps automáticamente, crea data dir para SQLite, abre navegador
+
 ---
 
 ## Funcionalidad — CRITICA (rompen el flujo)
@@ -158,6 +175,8 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 - 2026-03-24 — webhook.js: json_agg con COALESCE + FILTER
 - 2026-03-24 — db/index.js: validación de env vars con exit claro
 - 2026-03-24 — printer: selección bilingüe item_name_en/es según currency
+- 2026-03-24 — DB abstraction layer: SQLite (dev) + PostgreSQL (prod) con `better-sqlite3`
+- 2026-03-24 — Scripts run-dev.bat (Windows) y run-dev.sh (Mac/Linux) para desarrollo sin Docker
 
 ---
 

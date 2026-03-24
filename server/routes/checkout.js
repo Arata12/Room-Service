@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const router = express.Router();
-const { pool } = require('../db');
+const db = require('../db');
 const { printTicket } = require('../printer/print');
 
 const TEST_MODE = process.env.TEST_MODE === 'true';
@@ -11,11 +11,8 @@ const stripe = TEST_MODE ? null : require('stripe')(process.env.STRIPE_SECRET_KE
 const DEFAULT_CURRENCY = process.env.DEFAULT_CURRENCY || 'USD';
 const USD_TO_MXN_RATE = parseFloat(process.env.USD_TO_MXN_RATE) || 17.50;
 const menu = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/menu.json'), 'utf8'));
-const menuItems = menu.categories.flatMap(category => category.subcategories).flatMap(subcategory => subcategory.items);
-const menuItemMap = menuItems.reduce((acc, item) => {
-  acc[item.id] = item;
-  return acc;
-}, {});
+const menuItems = menu.categories.flatMap(c => c.subcategories).flatMap(sc => sc.items);
+const menuItemMap = menuItems.reduce((acc, item) => { acc[item.id] = item; return acc; }, {});
 
 function validateCheckoutInput(body) {
   const details = [];
@@ -42,6 +39,21 @@ function validateCheckoutInput(body) {
   return details;
 }
 
+async function getOrderItems(orderId) {
+  return db.all(
+    `SELECT item_id, item_name_en, item_name_es, quantity, unit_price_usd
+     FROM order_items WHERE order_id = ?`,
+    [orderId]
+  );
+}
+
+async function buildOrderResponse(orderId) {
+  const order = await db.get(`SELECT * FROM orders WHERE id = ?`, [orderId]);
+  if (!order) return null;
+  const items = await getOrderItems(orderId);
+  return { ...order, items };
+}
+
 router.post('/', async (req, res) => {
   try {
     const { items, roomNumber, guestName, notes, currency } = req.body;
@@ -60,56 +72,32 @@ router.post('/', async (req, res) => {
     }
 
     const selectedCurrency = currency || DEFAULT_CURRENCY;
-    
-    // Calculate totals
     const totalUSD = items.reduce((sum, item) => sum + (menuItemMap[item.id].price * item.quantity), 0);
 
-    // Create order in database
-    const client = await pool.connect();
+    // Create order + items inside a transaction
     let orderId;
-    try {
-      await client.query('BEGIN');
-      const orderResult = await client.query(
+    await db.tx(async (tx) => {
+      const r = await tx.run(
         `INSERT INTO orders (room_number, guest_name, total_usd, currency, status, notes)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [roomNumber, guestName, totalUSD, selectedCurrency, 'pending', notes]
+         VALUES (?, ?, ?, ?, 'pending', ?)`,
+        [roomNumber, guestName, totalUSD, selectedCurrency, notes || null]
       );
-      orderId = orderResult.rows[0].id;
+      orderId = r.lastInsertRowid;
 
       for (const item of items) {
-        await client.query(
+        await tx.run(
           `INSERT INTO order_items (order_id, item_id, item_name_en, item_name_es, quantity, unit_price_usd)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
+           VALUES (?, ?, ?, ?, ?, ?)`,
           [orderId, item.id, menuItemMap[item.id].name.en, menuItemMap[item.id].name.es, item.quantity, menuItemMap[item.id].price]
-          );
+        );
       }
-      await client.query('COMMIT');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
+    });
 
     if (TEST_MODE) {
-      await pool.query('UPDATE orders SET status = $1 WHERE id = $2', ['paid', orderId]);
-      const orderResult = await pool.query(
-        `SELECT o.*, COALESCE(json_agg(json_build_object(
-          'item_id', oi.item_id,
-          'item_name_en', oi.item_name_en,
-          'item_name_es', oi.item_name_es,
-          'quantity', oi.quantity,
-          'unit_price_usd', oi.unit_price_usd
-        )) FILTER (WHERE oi.id IS NOT NULL), '[]'::json) as items
-         FROM orders o
-         LEFT JOIN order_items oi ON o.id = oi.order_id
-         WHERE o.id = $1
-         GROUP BY o.id`,
-        [orderId]
-      );
-      const order = orderResult.rows[0];
+      await db.run(`UPDATE orders SET status = 'paid' WHERE id = ?`, [orderId]);
+      const order = await buildOrderResponse(orderId);
       try { await printTicket(order); } catch (e) { console.error('Failed to print ticket:', e); }
-      return res.json({ success: true, demoMode: true, url: `${req.headers.origin}/success?demo=1&order_id=${orderId}` , order });
+      return res.json({ success: true, demoMode: true, url: `${req.headers.origin}/success?demo=1&order_id=${orderId}`, order });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -128,7 +116,7 @@ router.post('/', async (req, res) => {
       metadata: { order_id: orderId.toString(), room_number: roomNumber, guest_name: guestName },
     });
 
-    await pool.query('UPDATE orders SET stripe_session_id = $1 WHERE id = $2', [session.id, orderId]);
+    await db.run(`UPDATE orders SET stripe_session_id = ? WHERE id = ?`, [session.id, orderId]);
     res.json({ url: session.url });
   } catch (err) {
     console.error('Checkout error:', err);
