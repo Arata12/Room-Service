@@ -131,7 +131,12 @@ export default function AdminPage() {
       `}</style>
       <div style={styles.page}>
         <div className="admin-container" style={styles.container}>
-          <h1 className="admin-title" style={styles.title}>{t('admin.title')}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <h1 className="admin-title" style={styles.title}>{t('admin.title')}</h1>
+            <a href="/admin/menu" style={{ fontSize: '0.85rem', color: '#10B981', fontWeight: '700', textDecoration: 'none', padding: '0.5rem 1rem', border: '1px solid #10B981', borderRadius: '6px', minHeight: '36px', display: 'flex', alignItems: 'center' }}>
+              {t('admin.menuEditorLink')}
+            </a>
+          </div>
 
           <input
             className="admin-search"

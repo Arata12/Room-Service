@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 const rateLimit = require('express-rate-limit');
 
 dotenv.config();
@@ -12,7 +11,7 @@ const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
     ? process.env.ALLOWED_ORIGIN || 'http://localhost'
     : '*',
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 };
 
 // Middleware
@@ -21,9 +20,6 @@ app.use(cors(corsOptions));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use('/api/checkout', rateLimit({ windowMs: 15 * 60 * 1000, max: 10 }));
 app.use(express.json());
-
-// Initialize database
-const { initDb } = require('./db/migrate');
 
 // Routes
 const menuRoutes = require('./routes/menu');
@@ -45,19 +41,6 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
-// Initialize and start
-async function start() {
-  try {
-    await initDb();
-    console.log('Database initialized');
-    
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Failed to start server:', err);
-    process.exit(1);
-  }
-}
-
-start();
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

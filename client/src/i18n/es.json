@@ -61,6 +61,7 @@
     "itemFallback": "Artículo"
   },
   "admin": {
+    "menuEditorLink": "Editar Menú",
     "title": "Pedidos de Admin",
     "searchPlaceholder": "Buscar por habitación o nombre del huésped",
     "loading": "Cargando pedidos…",
@@ -106,6 +107,33 @@
       "delivered": "Entregado",
       "cancelled": "Cancelado"
     }
+  },
+  "menuEditor": {
+    "title": "Editor de Menú",
+    "backToOrders": "Volver a Pedidos",
+    "addCategory": "Agregar Categoría",
+    "addSubcategory": "Agregar Subcategoría",
+    "addItem": "Agregar Artículo",
+    "editCategory": "Editar Categoría",
+    "editSubcategory": "Editar Subcategoría",
+    "editItem": "Editar Artículo",
+    "delete": "Eliminar",
+    "save": "Guardar Menú",
+    "saving": "Guardando…",
+    "saved": "¡Menú guardado!",
+    "loadError": "Error al cargar el menú",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esto?",
+    "selectPrompt": "Selecciona una categoría, subcategoría o artículo del panel izquierdo para editarlo.",
+    "fieldId": "ID (seguro para URL, sin espacios)",
+    "fieldNameEN": "Nombre (Inglés)",
+    "fieldNameES": "Nombre (Español)",
+    "fieldDescEN": "Descripción (Inglés)",
+    "fieldDescES": "Descripción (Español)",
+    "fieldPrice": "Precio",
+    "preview": "Vista previa",
+    "newCategory": "Nueva Categoría",
+    "newSubcategory": "Nueva Subcategoría",
+    "newItem": "Nuevo Artículo"
   },
   "common": {
     "close": "Cerrar"

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { CartProvider } from './CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -7,6 +7,7 @@ import MenuPage from './pages/MenuPage';
 import CartPage from './pages/CartPage';
 import SuccessPage from './pages/SuccessPage';
 import AdminPage from './pages/AdminPage';
+import MenuEditorPage from './pages/MenuEditorPage';
 
 function AdminLogin() {
   const [secret, setSecret] = useState('');
@@ -29,10 +30,21 @@ function AdminLogin() {
   );
 }
 
-function AdminRoute() {
+function AdminRoute({ children }) {
   const token = localStorage.getItem('adminToken');
   if (!token) return <AdminLogin />;
-  return <AdminPage />;
+  return children;
+}
+
+function AdminLayout() {
+  return (
+    <AdminRoute>
+      <Routes>
+        <Route path="/" element={<AdminPage />} />
+        <Route path="/menu" element={<MenuEditorPage />} />
+      </Routes>
+    </AdminRoute>
+  );
 }
 
 function App() {
@@ -45,7 +57,7 @@ function App() {
             <Route path="/" element={<MenuPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/success" element={<SuccessPage />} />
-            <Route path="/admin" element={<AdminRoute />} />
+            <Route path="/admin/*" element={<AdminLayout />} />
           </Routes>
         </main>
         <Footer />
