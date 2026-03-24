@@ -48,11 +48,67 @@
   "success": {
     "title": "¡Pedido Confirmado!",
     "message": "Tu pedido ha sido recibido y está siendo preparado.",
+    "demoMessage": "Modo demo — ¡pedido realizado con éxito!",
+    "loading": "Cargando detalles del pedido…",
     "orderNumber": "Número de Pedido",
     "room": "Habitación",
+    "guest": "Huésped",
+    "items": "Artículos",
     "total": "Total",
+    "info": "Nuestro equipo preparará tu pedido en breve. ¡Relájate y disfruta!",
     "backToMenu": "Volver al Menú",
-    "newOrder": "Hacer Otro Pedido"
+    "newOrder": "Hacer Otro Pedido",
+    "itemFallback": "Artículo"
+  },
+  "admin": {
+    "title": "Pedidos de Admin",
+    "searchPlaceholder": "Buscar por habitación o nombre del huésped",
+    "loading": "Cargando pedidos…",
+    "emptyState": "No se encontraron pedidos para este filtro.",
+    "itemsCount": "artículo",
+    "itemFallback": "Artículo",
+    "perItem": "cada uno",
+    "messages": {
+      "loadFailed": "No se pudieron cargar los pedidos",
+      "updating": "Actualizando…",
+      "updated": "Estado actualizado",
+      "updateFailed": "La actualización falló"
+    },
+    "columns": {
+      "id": "ID",
+      "room": "Hab.",
+      "guest": "Huésped",
+      "items": "Artículos",
+      "total": "Total",
+      "status": "Estado",
+      "time": "Hora",
+      "action": "Acción"
+    },
+    "details": {
+      "room": "Habitación",
+      "guest": "Huésped",
+      "status": "Estado",
+      "created": "Creado",
+      "notes": "Notas",
+      "items": "Artículos",
+      "history": "Historial de estado",
+      "historyFallback": "El historial de estado aún no está disponible."
+    },
+    "orderTitle": "Pedido #{{id}}",
+    "statuses": {
+      "all": "Todos",
+      "pending": "Pendiente",
+      "paid": "Pagado",
+      "received": "Recibido",
+      "preparing": "Preparando",
+      "ready": "Listo",
+      "delivering": "En entrega",
+      "delivered": "Entregado",
+      "cancelled": "Cancelado"
+    }
+  },
+  "common": {
+    "close": "Cerrar"
   },
   "errors": {
     "generic": "Algo salió mal. Por favor intenta de nuevo.",

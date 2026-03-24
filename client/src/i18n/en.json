@@ -48,11 +48,67 @@
   "success": {
     "title": "Order Confirmed!",
     "message": "Your order has been received and is being prepared.",
+    "demoMessage": "Demo mode — order placed successfully!",
+    "loading": "Loading order details…",
     "orderNumber": "Order Number",
     "room": "Room",
+    "guest": "Guest",
+    "items": "Items",
     "total": "Total",
+    "info": "Our team will prepare your order shortly. Sit back and relax!",
     "backToMenu": "Back to Menu",
-    "newOrder": "Place Another Order"
+    "newOrder": "Place Another Order",
+    "itemFallback": "Item"
+  },
+  "admin": {
+    "title": "Admin Orders",
+    "searchPlaceholder": "Search by room number or guest name",
+    "loading": "Loading orders…",
+    "emptyState": "No orders found for this filter.",
+    "itemsCount": "item",
+    "itemFallback": "Item",
+    "perItem": "each",
+    "messages": {
+      "loadFailed": "Failed to load orders",
+      "updating": "Updating…",
+      "updated": "Status updated",
+      "updateFailed": "Update failed"
+    },
+    "columns": {
+      "id": "ID",
+      "room": "Room",
+      "guest": "Guest",
+      "items": "Items",
+      "total": "Total",
+      "status": "Status",
+      "time": "Time",
+      "action": "Action"
+    },
+    "details": {
+      "room": "Room",
+      "guest": "Guest",
+      "status": "Status",
+      "created": "Created",
+      "notes": "Notes",
+      "items": "Items",
+      "history": "Status history",
+      "historyFallback": "Status history is not available yet."
+    },
+    "orderTitle": "Order #{{id}}",
+    "statuses": {
+      "all": "All",
+      "pending": "Pending",
+      "paid": "Paid",
+      "received": "Received",
+      "preparing": "Preparing",
+      "ready": "Ready",
+      "delivering": "Delivering",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "common": {
+    "close": "Close"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

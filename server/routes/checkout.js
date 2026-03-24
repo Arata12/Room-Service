@@ -17,13 +17,6 @@ const menuItemMap = menuItems.reduce((acc, item) => {
   return acc;
 }, {});
 
-function convertToUSD(amount, currency) {
-  if (currency === 'MXN') {
-    return amount / USD_TO_MXN_RATE;
-  }
-  return amount;
-}
-
 function validateCheckoutInput(body) {
   const details = [];
   const { roomNumber, guestName, notes, items } = body;
@@ -69,7 +62,7 @@ router.post('/', async (req, res) => {
     const selectedCurrency = currency || DEFAULT_CURRENCY;
     
     // Calculate totals
-    const totalUSD = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalUSD = items.reduce((sum, item) => sum + (menuItemMap[item.id].price * item.quantity), 0);
 
     // Create order in database
     const client = await pool.connect();
@@ -87,8 +80,8 @@ router.post('/', async (req, res) => {
         await client.query(
           `INSERT INTO order_items (order_id, item_id, item_name_en, item_name_es, quantity, unit_price_usd)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [orderId, item.id, menuItemMap[item.id].name.en, menuItemMap[item.id].name.es, item.quantity, item.price]
-        );
+          [orderId, item.id, menuItemMap[item.id].name.en, menuItemMap[item.id].name.es, item.quantity, menuItemMap[item.id].price]
+          );
       }
       await client.query('COMMIT');
     } catch (err) {
@@ -101,12 +94,13 @@ router.post('/', async (req, res) => {
     if (TEST_MODE) {
       await pool.query('UPDATE orders SET status = $1 WHERE id = $2', ['paid', orderId]);
       const orderResult = await pool.query(
-        `SELECT o.*, json_agg(json_build_object(
+        `SELECT o.*, COALESCE(json_agg(json_build_object(
+          'item_id', oi.item_id,
           'item_name_en', oi.item_name_en,
           'item_name_es', oi.item_name_es,
           'quantity', oi.quantity,
           'unit_price_usd', oi.unit_price_usd
-        )) as items
+        )) FILTER (WHERE oi.id IS NOT NULL), '[]'::json) as items
          FROM orders o
          LEFT JOIN order_items oi ON o.id = oi.order_id
          WHERE o.id = $1
@@ -123,8 +117,8 @@ router.post('/', async (req, res) => {
       line_items: items.map(item => ({
         price_data: {
           currency: selectedCurrency.toLowerCase(),
-          product_data: { name: item.name.en, description: item.name.es },
-          unit_amount: Math.round((selectedCurrency === 'MXN' ? item.price * USD_TO_MXN_RATE : item.price) * 100),
+          product_data: { name: menuItemMap[item.id].name.en, description: menuItemMap[item.id].name.es },
+          unit_amount: Math.round((selectedCurrency === 'MXN' ? menuItemMap[item.id].price * USD_TO_MXN_RATE : menuItemMap[item.id].price) * 100),
         },
         quantity: item.quantity,
       })),

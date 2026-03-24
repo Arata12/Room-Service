@@ -7,8 +7,12 @@ const PRINTER_PORT = process.env.PRINTER_PORT || 9100;
 const USD_TO_MXN_RATE = parseFloat(process.env.USD_TO_MXN_RATE) || 17.50;
 
 function formatCurrency(amount, currency) {
-  const symbol = currency === 'MXN' ? '$' : '$';
+  const symbol = currency === 'MXN' ? 'MX$' : '$';
   return `${symbol}${amount.toFixed(2)} ${currency}`;
+}
+
+function toDisplayAmount(amount, currency) {
+  return currency === 'MXN' ? amount * USD_TO_MXN_RATE : amount;
 }
 
 async function printTicket(order) {
@@ -32,9 +36,7 @@ async function printTicket(order) {
 
         const date = new Date(order.created_at).toLocaleString();
         const items = order.items || [];
-        const displayTotal = order.currency === 'MXN' 
-          ? order.total_usd * USD_TO_MXN_RATE 
-          : order.total_usd;
+        const displayTotal = toDisplayAmount(order.total_usd, order.currency);
 
         printer
           .font('a')
@@ -57,9 +59,7 @@ async function printTicket(order) {
         // Print items
         items.forEach(item => {
           const itemTotal = item.quantity * item.unit_price_usd;
-          const displayItemTotal = order.currency === 'MXN'
-            ? itemTotal * USD_TO_MXN_RATE
-            : itemTotal;
+          const displayItemTotal = toDisplayAmount(itemTotal, order.currency);
           
           printer
             .text(`${item.quantity}x ${item.item_name_en}`)

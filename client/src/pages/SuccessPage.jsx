@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, Link, useLocation } from 'react-router-dom';
 import { useCart } from '../CartContext';
@@ -12,6 +12,7 @@ export default function SuccessPage() {
   const [loading, setLoading] = useState(true);
   const cartCleared = useRef(false);
   const demoMode = location.state?.demoMode || searchParams.get('demo') === '1';
+  const getItemName = (item) => item.item_name_en || item.item_name_es || item.name || t('success.itemFallback');
 
   useEffect(() => {
     if (cartCleared.current) return;
@@ -49,7 +50,7 @@ export default function SuccessPage() {
   if (loading) {
     return (
       <div style={styles.page}>
-        <div style={styles.loading}>Loading…</div>
+            <div style={styles.loading}>{t('success.loading')}</div>
       </div>
     );
   }
@@ -69,23 +70,23 @@ export default function SuccessPage() {
           <h1 style={styles.title}>{t('success.title')}</h1>
 
           <p style={styles.message}>
-            {demoMode ? 'Demo Mode — Order Placed Successfully!' : t('success.message')}
+            {demoMode ? t('success.demoMessage') : t('success.message')}
           </p>
 
           {order && (
             <div style={styles.orderDetails}>
-              <div>Order: {order.id || order.order_id || '—'}</div>
-              <div>Room: {order.room_number || '—'}</div>
-              <div>Guest: {order.guest_name || '—'}</div>
-              <div>Items: {Array.isArray(order.items) ? order.items.map((item) => `${item.name} x${item.quantity}`).join(', ') : '—'}</div>
-              <div>Total: {order.total || '—'} {order.currency || currency}</div>
+              <div>{t('success.orderNumber')}: {order.id || order.order_id || '—'}</div>
+              <div>{t('success.room')}: {order.room_number || '—'}</div>
+              <div>{t('success.guest')}: {order.guest_name || '—'}</div>
+              <div>{t('success.items')}: {Array.isArray(order.items) ? order.items.map((item) => `${getItemName(item)} x${item.quantity}`).join(', ') : '—'}</div>
+              <div>{t('success.total')}: {order.total || '—'} {order.currency || currency}</div>
             </div>
           )}
 
           {/* Info strip */}
           <div style={styles.infoStrip}>
             <span style={styles.infoText}>
-              Our team will prepare your order shortly. Sit back and relax!
+              {t('success.info')}
             </span>
           </div>
 

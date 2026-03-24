@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const statuses = ['all', 'pending', 'paid', 'received', 'preparing', 'ready', 'delivering', 'delivered', 'cancelled'];
 const validStatuses = statuses.slice(1);
@@ -15,6 +16,7 @@ const statusColors = {
 };
 
 export default function AdminPage() {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState('all');
   const [searchInput, setSearchInput] = useState('');
@@ -36,7 +38,7 @@ export default function AdminPage() {
       const data = await res.json();
       setOrders(data.orders || []);
     } catch {
-      setMessage('Failed to load orders');
+      setMessage(t('admin.messages.loadFailed'));
     } finally { setLoading(false); }
   };
 
@@ -60,18 +62,21 @@ export default function AdminPage() {
   };
 
   const updateStatus = async (id, nextStatus) => {
-    setMessage('Updating...');
+    setMessage(t('admin.messages.updating'));
     const res = await fetch(`/api/admin/orders/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: nextStatus }),
     });
-    if (res.ok) { setMessage('Status updated'); fetchOrders(); }
-    else { setMessage('Update failed'); }
+    if (res.ok) { setMessage(t('admin.messages.updated')); fetchOrders(); }
+    else { setMessage(t('admin.messages.updateFailed')); }
   };
 
   const summary = (items = []) =>
-    `${items.length} item${items.length !== 1 ? 's' : ''}: ${items.slice(0, 3).map((i) => i.item_name_en).join(', ')}${items.length > 3 ? '…' : ''}`;
+    `${items.length} ${t('admin.itemsCount', { count: items.length })}: ${items.slice(0, 3).map((i) => i.item_name_en || i.item_name_es || i.name || t('admin.itemFallback')).join(', ')}${items.length > 3 ? '…' : ''}`;
+
+  const getStatusLabel = (value) => t(`admin.statuses.${value}`, value);
+  const getOrderItemName = (item) => item.item_name_en || item.item_name_es || item.name || t('admin.itemFallback');
 
   return (
     <>
@@ -126,7 +131,7 @@ export default function AdminPage() {
       `}</style>
       <div style={styles.page}>
         <div className="admin-container" style={styles.container}>
-          <h1 className="admin-title" style={styles.title}>Admin Orders</h1>
+          <h1 className="admin-title" style={styles.title}>{t('admin.title')}</h1>
 
           <input
             className="admin-search"
@@ -137,10 +142,9 @@ export default function AdminPage() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') setSearch(searchInput);
             }}
-            placeholder="Search by room number or guest name"
+            placeholder={t('admin.searchPlaceholder')}
           />
 
-          {/* Filter bar */}
           <div className="admin-filter-bar">
             {statuses.map((s) => (
               <button
@@ -152,36 +156,34 @@ export default function AdminPage() {
                   ...(status === s ? styles.filterBtnActive : {}),
                 }}
               >
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {getStatusLabel(s)}
               </button>
             ))}
           </div>
 
-          {/* Feedback message */}
           {message && (
             <div style={styles.messageBanner}>
               {message}
             </div>
           )}
 
-          {/* Orders table */}
           {loading ? (
-            <div style={styles.loading}>Loading orders…</div>
+            <div style={styles.loading}>{t('admin.loading')}</div>
           ) : orders.length === 0 ? (
-            <div style={styles.emptyState}>No orders found for this filter.</div>
+            <div style={styles.emptyState}>{t('admin.emptyState')}</div>
           ) : (
             <div className="admin-table-wrapper">
               <table style={styles.table}>
                 <thead>
                   <tr style={styles.tableHeadRow}>
-                    <th className="admin-th" style={styles.th}>ID</th>
-                    <th className="admin-th" style={styles.th}>Room</th>
-                    <th className="admin-th" style={styles.th}>Guest</th>
-                    <th className="admin-th" style={styles.th}>Items</th>
-                    <th className="admin-th" style={styles.th}>Total</th>
-                    <th className="admin-th" style={styles.th}>Status</th>
-                    <th className="admin-th" style={styles.th}>Time</th>
-                    <th className="admin-th" style={styles.th}>Action</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.id')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.room')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.guest')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.items')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.total')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.status')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.time')}</th>
+                    <th className="admin-th" style={styles.th}>{t('admin.columns.action')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -220,7 +222,7 @@ export default function AdminPage() {
                             color: sc.color,
                             border: `1px solid ${sc.border}`,
                           }}>
-                            {o.status}
+                          {getStatusLabel(o.status)}
                           </span>
                         </td>
                         <td className="admin-td" style={{ ...styles.td, fontSize: '0.78rem', color: '#5C6B7A', whiteSpace: 'nowrap' }}>
@@ -233,10 +235,10 @@ export default function AdminPage() {
                             className="admin-select"
                             style={styles.select}
                           >
-                            {validStatuses.map((s) => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
+                              {validStatuses.map((s) => (
+                                <option key={s} value={s}>{getStatusLabel(s)}</option>
+                              ))}
+                            </select>
                         </td>
                       </tr>
                     );
@@ -250,31 +252,31 @@ export default function AdminPage() {
             <div style={styles.modalBackdrop} onClick={() => setSelectedOrder(null)}>
               <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
                 <div style={styles.modalHeader}>
-                  <h2 style={styles.modalTitle}>Order #{selectedOrder.id}</h2>
-                  <button style={styles.closeBtn} onClick={() => setSelectedOrder(null)}>×</button>
+                  <h2 style={styles.modalTitle}>{t('admin.orderTitle', { id: selectedOrder.id })}</h2>
+                  <button style={styles.closeBtn} onClick={() => setSelectedOrder(null)}>{t('common.close')}</button>
                 </div>
                 <div style={styles.modalGrid}>
-                  <div><strong>Room:</strong> {selectedOrder.room_number}</div>
-                  <div><strong>Guest:</strong> {selectedOrder.guest_name}</div>
-                  <div><strong>Status:</strong> {selectedOrder.status}</div>
-                  <div><strong>Created:</strong> {new Date(selectedOrder.created_at).toLocaleString()}</div>
-                  <div><strong>Notes:</strong> {selectedOrder.notes || '—'}</div>
+                  <div><strong>{t('admin.details.room')}:</strong> {selectedOrder.room_number}</div>
+                  <div><strong>{t('admin.details.guest')}:</strong> {selectedOrder.guest_name}</div>
+                  <div><strong>{t('admin.details.status')}:</strong> {getStatusLabel(selectedOrder.status)}</div>
+                  <div><strong>{t('admin.details.created')}:</strong> {new Date(selectedOrder.created_at).toLocaleString()}</div>
+                  <div><strong>{t('admin.details.notes')}:</strong> {selectedOrder.notes || '—'}</div>
                 </div>
-                <h3 style={styles.sectionTitle}>Items</h3>
+                <h3 style={styles.sectionTitle}>{t('admin.details.items')}</h3>
                 <div style={styles.itemsList}>
                   {(selectedOrder.items || []).map((item, index) => {
                     const lineTotal = Number(item.quantity * item.unit_price_usd).toFixed(2);
                     return (
                       <div key={`${item.item_id || index}-${index}`} style={styles.itemRow}>
-                        <div>{item.quantity}× {item.item_name_en} / {item.item_name_es}</div>
-                        <div>${Number(item.unit_price_usd).toFixed(2)} each</div>
+                        <div>{item.quantity}× {getOrderItemName(item)}</div>
+                        <div>${Number(item.unit_price_usd).toFixed(2)} {t('admin.perItem')}</div>
                         <div>${lineTotal}</div>
                       </div>
                     );
                   })}
                 </div>
-                <h3 style={styles.sectionTitle}>Status history</h3>
-                <div style={styles.historyBox}>{selectedOrder.status_history?.length ? JSON.stringify(selectedOrder.status_history) : 'No history yet'}</div>
+                <h3 style={styles.sectionTitle}>{t('admin.details.history')}</h3>
+                <div style={styles.historyBox}>{t('admin.details.historyFallback')}</div>
               </div>
             </div>
           )}
