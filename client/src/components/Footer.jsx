@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const currentYear = new Date().getFullYear();
 
@@ -15,8 +16,8 @@ export default function Footer() {
           </div>
 
           <nav style={styles.links}>
-            <a href="/" style={styles.link}>Menu</a>
-            <a href="/cart" style={styles.link}>Cart</a>
+            <Link to="/" style={styles.link}>Menu</Link>
+            <Link to="/cart" style={styles.link}>Cart</Link>
           </nav>
         </div>
 

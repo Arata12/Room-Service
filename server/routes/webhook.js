@@ -1,12 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.TEST_MODE === 'true' ? null : require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { pool } = require('../db');
 const { printTicket } = require('../printer/print');
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const TEST_MODE = process.env.TEST_MODE === 'true';
 
 router.post('/', async (req, res) => {
+  if (TEST_MODE) {
+    return res.json({ received: true });
+  }
+
   const sig = req.headers['stripe-signature'];
   let event;
 

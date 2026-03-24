@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../CartContext';
 
@@ -14,6 +15,20 @@ export default function Navbar() {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseDown = (event) => {
+      const target = event.target;
+      const insideDropdown = target.closest?.('[data-navbar-dropdown="true"]');
+      if (!insideDropdown) {
+        setShowLangMenu(false);
+        setShowCurrencyMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
   }, []);
 
   const changeLanguage = (lang) => {
@@ -38,7 +53,7 @@ export default function Navbar() {
 
       <div style={styles.controls}>
         {/* Currency Toggle */}
-        <div style={styles.dropdownContainer}>
+        <div style={styles.dropdownContainer} data-navbar-dropdown="true">
           <button
             style={styles.button}
             onClick={() => {
@@ -61,7 +76,7 @@ export default function Navbar() {
         </div>
 
         {/* Language Toggle */}
-        <div style={styles.dropdownContainer}>
+        <div style={styles.dropdownContainer} data-navbar-dropdown="true">
           <button
             style={styles.button}
             onClick={() => {
@@ -84,10 +99,10 @@ export default function Navbar() {
         </div>
 
         {/* Cart Icon */}
-        <a href="/cart" style={styles.cartLink}>
+        <Link to="/cart" style={styles.cartLink}>
           <span style={styles.cartIcon}>🛒</span>
           {cartCount > 0 && <span style={styles.badge}>{cartCount}</span>}
-        </a>
+        </Link>
       </div>
 
       <style>{`

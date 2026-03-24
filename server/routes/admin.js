@@ -1,15 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const auth = require('../middleware/auth');
 
 const VALID_STATUSES = ['pending', 'paid', 'received', 'preparing', 'ready', 'delivering', 'delivered', 'cancelled'];
 
+router.use(auth);
+
 router.get('/orders', async (req, res) => {
   try {
-    const { status, limit = 20, offset = 0 } = req.query;
+    const { status, limit = 20, offset = 0, search = '' } = req.query;
+    if (typeof search === 'string' && search.length > 50) return res.status(400).json({ error: 'Search term too long' });
     const filters = [];
     const values = [];
     if (status) { filters.push(`o.status = $${values.length + 1}`); values.push(status); }
+    if (search && String(search).trim()) {
+      filters.push(`(o.room_number ILIKE $${values.length + 1} OR o.guest_name ILIKE $${values.length + 1})`);
+      values.push(`%${String(search).trim()}%`);
+    }
     const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
     const result = await pool.query(
       `SELECT o.*, COALESCE(json_agg(json_build_object(

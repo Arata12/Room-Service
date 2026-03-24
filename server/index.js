@@ -2,17 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.ALLOWED_ORIGIN || 'http://localhost'
+    : '*',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+};
 
-// Raw body for Stripe webhooks
+// Middleware
 app.use('/api/webhook', express.raw({ type: 'application/json' }));
+app.use(cors(corsOptions));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use('/api/checkout', rateLimit({ windowMs: 15 * 60 * 1000, max: 10 }));
+app.use(express.json());
 
 // Initialize database
 const { initDb } = require('./db/migrate');

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 const statuses = ['all', 'pending', 'paid', 'received', 'preparing', 'ready', 'delivering', 'delivered', 'cancelled'];
 const validStatuses = statuses.slice(1);
@@ -17,14 +17,21 @@ const statusColors = {
 export default function AdminPage() {
   const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState('all');
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const USD_TO_MXN_RATE = Number(import.meta.env.VITE_USD_TO_MXN_RATE) || 17.5;
+  const debounceRef = useRef(null);
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const qs = new URLSearchParams();
       if (status !== 'all') qs.set('status', status);
+      if (search.trim()) qs.set('search', search.trim());
       const res = await fetch(`/api/admin/orders?${qs.toString()}`);
       const data = await res.json();
       setOrders(data.orders || []);
@@ -37,7 +44,20 @@ export default function AdminPage() {
     fetchOrders();
     const id = setInterval(fetchOrders, 10000);
     return () => clearInterval(id);
-  }, [status]);
+  }, [status, search]);
+
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchInput]);
+
+  const totalDisplay = (o) => {
+    const total_display = o.currency === 'MXN'
+      ? Number(o.total_usd * USD_TO_MXN_RATE).toFixed(2)
+      : Number(o.total_usd).toFixed(2);
+    return `$${total_display} ${o.currency}`;
+  };
 
   const updateStatus = async (id, nextStatus) => {
     setMessage('Updating...');
@@ -62,6 +82,17 @@ export default function AdminPage() {
           flex-wrap: wrap;
           margin-bottom: 1.5rem;
         }
+        .admin-search {
+          width: min(100%, 420px);
+          padding: 0.7rem 0.9rem;
+          border: 1px solid rgba(30,58,95,0.2);
+          border-radius: 10px;
+          margin-bottom: 0.75rem;
+          font-size: 0.95rem;
+        }
+        .admin-row-clickable {
+          cursor: pointer;
+        }
         .admin-table-wrapper {
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
@@ -80,6 +111,9 @@ export default function AdminPage() {
             font-size: 0.78rem !important;
             padding: 0.35rem 0.75rem !important;
           }
+          .admin-search {
+            width: 100%;
+          }
           .admin-th, .admin-td {
             padding: 0.6rem 0.75rem !important;
             font-size: 0.78rem !important;
@@ -93,6 +127,18 @@ export default function AdminPage() {
       <div style={styles.page}>
         <div className="admin-container" style={styles.container}>
           <h1 className="admin-title" style={styles.title}>Admin Orders</h1>
+
+          <input
+            className="admin-search"
+            style={styles.search}
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') setSearch(searchInput);
+            }}
+            placeholder="Search by room number or guest name"
+          />
 
           {/* Filter bar */}
           <div className="admin-filter-bar">
@@ -144,9 +190,14 @@ export default function AdminPage() {
                     return (
                       <tr
                         key={o.id}
+                        className="admin-row-clickable"
                         style={{
                           ...styles.tr,
                           backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAF8',
+                        }}
+                        onClick={(e) => {
+                          if (e.target.closest('select')) return;
+                          setSelectedOrder(o);
                         }}
                       >
                         <td className="admin-td" style={styles.td}>
@@ -160,7 +211,7 @@ export default function AdminPage() {
                           {summary(o.items || [])}
                         </td>
                         <td className="admin-td" style={{ ...styles.td, fontWeight: '700', color: '#059669' }}>
-                          ${Number(o.total_usd).toFixed(2)}
+                          {totalDisplay(o)}
                         </td>
                         <td className="admin-td" style={styles.td}>
                           <span style={{
@@ -192,6 +243,39 @@ export default function AdminPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {selectedOrder && (
+            <div style={styles.modalBackdrop} onClick={() => setSelectedOrder(null)}>
+              <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <div style={styles.modalHeader}>
+                  <h2 style={styles.modalTitle}>Order #{selectedOrder.id}</h2>
+                  <button style={styles.closeBtn} onClick={() => setSelectedOrder(null)}>×</button>
+                </div>
+                <div style={styles.modalGrid}>
+                  <div><strong>Room:</strong> {selectedOrder.room_number}</div>
+                  <div><strong>Guest:</strong> {selectedOrder.guest_name}</div>
+                  <div><strong>Status:</strong> {selectedOrder.status}</div>
+                  <div><strong>Created:</strong> {new Date(selectedOrder.created_at).toLocaleString()}</div>
+                  <div><strong>Notes:</strong> {selectedOrder.notes || '—'}</div>
+                </div>
+                <h3 style={styles.sectionTitle}>Items</h3>
+                <div style={styles.itemsList}>
+                  {(selectedOrder.items || []).map((item, index) => {
+                    const lineTotal = Number(item.quantity * item.unit_price_usd).toFixed(2);
+                    return (
+                      <div key={`${item.item_id || index}-${index}`} style={styles.itemRow}>
+                        <div>{item.quantity}× {item.item_name_en} / {item.item_name_es}</div>
+                        <div>${Number(item.unit_price_usd).toFixed(2)} each</div>
+                        <div>${lineTotal}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <h3 style={styles.sectionTitle}>Status history</h3>
+                <div style={styles.historyBox}>{selectedOrder.status_history?.length ? JSON.stringify(selectedOrder.status_history) : 'No history yet'}</div>
+              </div>
             </div>
           )}
         </div>
@@ -315,4 +399,33 @@ const styles = {
     outline: 'none',
     minHeight: '36px',
   },
+  search: {
+    display: 'block',
+  },
+  modalBackdrop: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1rem',
+    zIndex: 1000,
+  },
+  modal: {
+    width: 'min(900px, 100%)',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    backgroundColor: '#fff',
+    borderRadius: '12px',
+    padding: '1.25rem',
+  },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  modalTitle: { margin: 0, color: '#1E3A5F' },
+  closeBtn: { border: 'none', background: 'transparent', fontSize: '1.8rem', cursor: 'pointer' },
+  modalGrid: { display: 'grid', gap: '0.5rem', marginTop: '1rem' },
+  sectionTitle: { marginTop: '1rem', marginBottom: '0.5rem', color: '#1E3A5F' },
+  itemsList: { display: 'grid', gap: '0.5rem' },
+  itemRow: { display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '1rem', padding: '0.6rem 0.75rem', background: '#FAF9F7', borderRadius: '8px' },
+  historyBox: { padding: '0.75rem', background: '#FAF9F7', borderRadius: '8px', whiteSpace: 'pre-wrap' },
 };

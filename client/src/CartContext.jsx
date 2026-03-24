@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
+  const usdToMxnRate = parseFloat(import.meta.env.VITE_USD_TO_MXN_RATE) || 17.5;
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem('cart');
     return saved ? JSON.parse(saved) : [];
@@ -56,7 +57,7 @@ export function CartProvider({ children }) {
 
   const formatPrice = (price) => {
     const symbol = currency === 'MXN' ? '$' : '$';
-    const converted = currency === 'MXN' ? price * 17.5 : price;
+    const converted = currency === 'MXN' ? price * usdToMxnRate : price;
     return `${symbol}${converted.toFixed(2)} ${currency}`;
   };
 
@@ -72,6 +73,7 @@ export function CartProvider({ children }) {
         currency,
         setCurrency,
         formatPrice,
+        usdToMxnRate,
       }}
     >
       {children}

@@ -1,5 +1,8 @@
 const { pool } = require('./index');
 
+// Current lightweight migration setup: it creates/updates core tables on start.
+// For production, prefer a versioned migration tool like node-pg-migrate.
+
 const createTables = `
 CREATE TABLE IF NOT EXISTS orders (
   id SERIAL PRIMARY KEY,
@@ -21,6 +24,12 @@ CREATE TABLE IF NOT EXISTS order_items (
   item_name_es VARCHAR(100) NOT NULL,
   quantity INTEGER NOT NULL,
   unit_price_usd NUMERIC(10,2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  applied_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);

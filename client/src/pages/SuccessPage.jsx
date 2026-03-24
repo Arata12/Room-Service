@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, Link, useLocation } from 'react-router-dom';
 import { useCart } from '../CartContext';
@@ -10,18 +10,41 @@ export default function SuccessPage() {
   const { clearCart, currency } = useCart();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const cartCleared = useRef(false);
   const demoMode = location.state?.demoMode || searchParams.get('demo') === '1';
 
   useEffect(() => {
+    if (cartCleared.current) return;
+    cartCleared.current = true;
     clearCart();
+  }, [clearCart]);
 
+  useEffect(() => {
     const sessionId = searchParams.get('session_id');
-    if (sessionId || demoMode) {
+    const loadOrder = async () => {
+      try {
+        if (sessionId && !demoMode) {
+          const response = await fetch(`/api/orders?session_id=${encodeURIComponent(sessionId)}`);
+          if (!response.ok) {
+            throw new Error('Failed to load order');
+          }
+          const data = await response.json();
+          setOrder(data.order || data);
+        }
+      } catch (error) {
+        setOrder(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (demoMode) {
       setLoading(false);
-    } else {
-      setLoading(false);
+      return;
     }
-  }, [searchParams, clearCart]);
+
+    loadOrder();
+  }, [searchParams, demoMode]);
 
   if (loading) {
     return (
@@ -48,6 +71,16 @@ export default function SuccessPage() {
           <p style={styles.message}>
             {demoMode ? 'Demo Mode — Order Placed Successfully!' : t('success.message')}
           </p>
+
+          {order && (
+            <div style={styles.orderDetails}>
+              <div>Order: {order.id || order.order_id || '—'}</div>
+              <div>Room: {order.room_number || '—'}</div>
+              <div>Guest: {order.guest_name || '—'}</div>
+              <div>Items: {Array.isArray(order.items) ? order.items.map((item) => `${item.name} x${item.quantity}`).join(', ') : '—'}</div>
+              <div>Total: {order.total || '—'} {order.currency || currency}</div>
+            </div>
+          )}
 
           {/* Info strip */}
           <div style={styles.infoStrip}>
@@ -160,5 +193,14 @@ const styles = {
     padding: '4rem',
     fontSize: '1.2rem',
     color: 'rgba(30,58,95,0.75)',
+  },
+  orderDetails: {
+    textAlign: 'left',
+    margin: '0 1.5rem 1.5rem',
+    padding: '1rem',
+    backgroundColor: '#F5F0E8',
+    borderRadius: '8px',
+    color: '#1E3A5F',
+    lineHeight: 1.6,
   },
 };

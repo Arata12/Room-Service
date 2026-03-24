@@ -1,20 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import MenuCard from '../components/MenuCard';
-import menuData from '../menu.json';
 
 export default function MenuPage() {
   const { t, i18n } = useTranslation();
   const [menu, setMenu] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const getLang = (lang) => lang.split('-')[0];
 
   useEffect(() => {
-    // In production, this would fetch from /api/menu
-    // For now, use the local JSON
-    setMenu(menuData);
+    const controller = new AbortController();
+
+    const loadMenu = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await fetch('/api/menu', { signal: controller.signal });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load menu (${response.status})`);
+        }
+
+        const data = await response.json();
+        setMenu(data);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setError('Unable to load the menu right now. Please try again.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMenu();
+
+    return () => controller.abort();
   }, []);
 
-  if (!menu) return <div style={styles.loading}>Loading...</div>;
+  if (loading) return <div style={styles.loading}>Loading...</div>;
+
+  if (error) {
+    return (
+      <div style={styles.loading}>
+        <p>{error}</p>
+        <button style={styles.retryButton} onClick={() => window.location.reload()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!menu) return null;
 
   return (
     <>
