@@ -34,12 +34,12 @@ router.post('/', async (req, res) => {
 
       // Get full order details
       const orderResult = await pool.query(
-        `SELECT o.*, json_agg(json_build_object(
+        `SELECT o.*, COALESCE(json_agg(json_build_object(
           'item_name_en', oi.item_name_en,
           'item_name_es', oi.item_name_es,
           'quantity', oi.quantity,
           'unit_price_usd', oi.unit_price_usd
-        )) as items
+        )) FILTER (WHERE oi.id IS NOT NULL), '[]'::json) as items
          FROM orders o
          LEFT JOIN order_items oi ON o.id = oi.order_id
          WHERE o.stripe_session_id = $1

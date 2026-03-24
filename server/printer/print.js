@@ -57,12 +57,13 @@ async function printTicket(order) {
           .text('');
 
         // Print items
+        const itemName = order.currency === 'MXN' ? 'item_name_es' : 'item_name_en';
         items.forEach(item => {
           const itemTotal = item.quantity * item.unit_price_usd;
           const displayItemTotal = toDisplayAmount(itemTotal, order.currency);
           
           printer
-            .text(`${item.quantity}x ${item.item_name_en}`)
+            .text(`${item.quantity}x ${item[itemName]}`)
             .align('rt')
             .text(formatCurrency(displayItemTotal, order.currency))
             .align('lt');
