@@ -32,12 +32,12 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 
 ## Infraestructura
 
-- [pendiente] **Crear .gitignore en raíz**
+- [completada] **Crear .gitignore en raíz**
   - Archivos: `.gitignore`
   - Impacto: Impedir que node_modules, builds, .env y archivos temporales se suban a GitHub
   - Notas: Debe ignorar `client/node_modules/`, `server/node_modules/`, `client/dist/`, `server/dist/`, `*.log`, `.env`, `.env.local`
 
-- [pendiente] **Sacar node_modules del tracking de git**
+- [completada] **Sacar node_modules del tracking de git**
   - Archivos: `client/node_modules/`, `server/node_modules/`
   - Impacto: Reducir tamaño del repo, impedir sube archivos de módulos a GitHub
   - Notas: `git rm --cached -r client/node_modules server/node_modules` (no borrar archivos locales)
@@ -152,7 +152,7 @@ Estados: `pendiente` | `in_progress` | `completada` | `pospuesta`
 ## Completadas (historial)
 
 - 2026-03-24 — Creado TODO.md inicial y .gitignore
-- 2026-03-24 — Sacado node_modules del tracking de git
+- 2026-03-24 — Sacado node_modules del tracking de git (5355 archivos eliminados del repo, ~996K líneas)
 
 ---
 
